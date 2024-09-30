@@ -1,0 +1,125 @@
+from prettytable import from_db_cursor
+from datetime import date
+from prettytable import PrettyTable
+import mysql.connector as ms
+con = ms.connect(host = 'localhost',user = 'root',password = 'root15',charset = 'utf8')
+mycur = con.cursor()
+mycur.execute("use Project_PPS")
+#-----------------------DEFINING FUNCTIONS-------------------------------------------
+#-----------------------COLLECT USER DETAILS-----------------------------------------
+def CollDet():
+    from datetime import date
+    userdetails = ()
+    def CheckPh():
+        p = int(input("PLEASE ENTER YOUR VALID PHONE NUMBER: "))
+        if len(str(p)) != 10:
+            print("INVALID PHONE NUMBER , PLEASE ENTER YOUR PHONE NUMBER AGAIN")
+            CheckPh()
+        else:
+            return p
+    name = input("PLEASE ENTER YOUR FULL NAME: ")
+    ph = CheckPh()
+    userid = name[0:4] + str(ph)[-4:-1]+str(ph)[-1]
+    date = date.today()
+    userdetails = (userid , name , ph , date )
+    return userdetails
+#-----------------------PAYMENT PAGE-----------------------------------------------
+def PaymentPage(cost):
+    print("----------THE REQUIRED AMOUNT TO BE PAYED IS {}----------".format(cost))
+    z = PrettyTable()
+    z.field_names = (["WELCOME TO THE PAYMENT PAGE"])
+    z.add_row(["MODES OF PAYEMENT INCLUDES"])
+    z.add_row(["NETBANKING"])
+    z.add_row(["UPI TRANSACTION"])
+    z.add_row(["CREDIT OR DEBIT PAYMENT"])
+    z.add_row(["CASH PAYMENT"])
+    print(z)
+    ch = input()
+    if ch.upper() in "NETBANKING":
+        acc = int(input("ENTER ACCOUNT NUMBER"))
+        b = input("ENTER THE RESPECTIVE BANK NAME")
+        print("THE REQUIRED PAYMENT HAS BEEN APPROVED")
+    elif ch.upper() in "UPI TRANSCATION":
+        no = input("ENTER YOUR VERIFIED UPI ID")
+        print("THE REQUIRED PAYMENT HAS BEEN APPROVED")
+    elif ch.upper() in "CREDIT OR DEBIT PAYMENT" or ch.upper() in "CASH PAYMENT":
+        print("THE AMOUNT WILL BE COLLECTED IN PERSON AT THE RECEPTION")
+    return 10
+#---------------------------------BOOK ROOM----------------------------------------
+def RoomBooking(userdetails):
+    z = PrettyTable()
+    z.field_names = (['STANDARD','SUITE','ACCESSIBLE','FAMILY'])
+    z.add_row(['A basic room with essential amenities','Luxurious and spacious','Room for people with disabilities','suitable for large families(6 people)'])
+    print("\t\t\t****** ROOM OPTIONS AVAILABLE ******")
+    print(z)
+    print("ENTER YOUR PREFERRED ROOM CHOICE: ")
+    rt = (input())
+    print("YOUR PREFERRED CHOICE IS ",rt)
+    d = int(input("ENTER PREFERRED DURATION OF STAY"))
+    if rt.upper() in "STANDARD ROOM":
+        p = d * 1000
+    elif rt.upper() in "SUITE ROOM":
+        p = d * 2000
+    elif rt.upper() in "ACCESSIBLE ROOM":
+        p = d * 1500
+    elif rt.upper() in "FAMILY ROOM":
+        p = d * 750
+    else:
+        print("YOU HAVE CHOSEN A ROOM WHICH IS OUT OF THE GIVEN CHOICES , PLEASE TRY AGAIN")
+        RoomBooking()
+    z = PrettyTable()
+    z.field_names = (["YOUR PREFERRED ROOM CHOICE OF {} HAS A PRICE OF {}".format(rt,p)])
+    z.add_row(["ENTER 'OK' TO GO TO THE PAYMENT PAGE"])
+    z.add_row(["ENTER 'BACK' TO GO CHANGE YOUR PREFERRED ROOM "])
+    print(z)
+    x = input()
+    if x.upper() in "OK":
+         pay = PaymentPage(p)
+    elif x.upper() in "BACK":
+        RoomBooking()
+    if pay == 10:
+        print("YOUR ROOM HAS BEEN SUCCESSFULLY RESERVED FOR YOUR STAY")
+        print("YOUR ROOM'S KEY CARD CAN BE RECEIVED FROM THE RECEPTION WHEN YOU ARRIVE")
+        print("------------THANKS FOR CHOOSING HOTEL SACCARDOTE ! ENJOY YOUR STAY------------")
+        userdetails += (rt,)
+        sql = "INSERT INTO Customers (UserID,Name,PhoneNumber,DateOfLastBooking,LastRoomBooked) VALUES (%s,%s,%s,%s,%s)"
+        mycur.execute(sql,userdetails)
+        con.commit()
+        print("-----------------YOUR DETAILS HAS BEEN INSERTED INTO OUR PERSONAL DATABASE---------------------")
+#----------------------------FOOD BOOKING---------------------------------------------------------
+def FoodPreBook():
+    mycur.execute("select * from menu")
+    menu = PrettyTable()
+    menu = from_db_cursor(mycur)
+    print(menu)
+
+
+
+
+
+
+
+
+
+
+
+
+
+z = PrettyTable()
+z.field_names = (["          WELCOME TO HOTEL SACCARDOTE        "])
+z.add_row(["PRESS 1 FOR NEW CUSTOMER"]) 
+z.add_row(["PRESS 2 FOR EXISTING CUSTOMER"])
+print(z)
+ch = int(input())
+if ch == 1:
+    det = CollDet()
+    z = PrettyTable()
+    z.field_names = (['ROOM BOOKING','FOOD OPTIONS','EXTRA AMENITIES','EXIT'])
+    z.add_row([1,2,3,4])
+    print("\t\t\t\t****** SERVICE OPTIONS AVAILABLE ******")
+    print(z)
+    ch = int(input())
+    if ch == 1:
+        RoomBooking(det)
+    elif ch == 2:
+        FoodPreBook()
